@@ -9,6 +9,7 @@ import java.awt.geom.*;
 import java.io.*;
 
 import java.util.ArrayList;
+import java.util.Random;
 public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
     private final int SECOND_IN_MILLISECONDS = 1000;
     private int ScreenWidth;
@@ -17,7 +18,7 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
 
     private Timer StartTimer;
     private Timer MovementTimer;
-    private Timer GameTimer;
+    private Timer AsteroidSpawnTimer;
 
     private BufferedImage BackgroundImage;
     private AffineTransform BackgroundScaler;
@@ -27,6 +28,9 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
     private Spaceship player;
     
     private ArrayList<Bullet> bullets;
+    private ArrayList<Asteroid> enemies;
+
+    private Random ran = new Random();
     public AsteroidPanel(int DisplayWidth, int DisplayHeight){
         this.ScreenWidth = DisplayWidth;
         this.ScreenHeight = DisplayHeight;
@@ -68,11 +72,15 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
         BackgroundScaler.scale(ScaleWidth, ScaleHeight);
 
         StartTimer = new Timer(SECOND_IN_MILLISECONDS, this);
-        GameTimer = new Timer(1, this);
+        AsteroidSpawnTimer = new Timer(SECOND_IN_MILLISECONDS, this);
+        MovementTimer = new Timer(SECOND_IN_MILLISECONDS, this);
 
         player = new Spaceship(DisplayWidth /2, DisplayHeight);
         //player.enableDrawing(true);
+        
         bullets = new ArrayList<>();
+        enemies = new ArrayList<>();
+        
         addKeyListener(this);
         setFocusable(true);
         SecondsToStart = 4;
@@ -84,7 +92,21 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
             SecondsToStart = SecondsToStart -1;
             GameLabel.setText(""+ SecondsToStart);
             if(SecondsToStart <= 0){
+                GameLabel.setText("");
+                MovementTimer.start();
+                AsteroidSpawnTimer.start();
                 StartTimer.stop();
+            }
+        }
+        if(e.getSource() ==AsteroidSpawnTimer){
+            //System.out.println(AsteroidSpawnTimer.getDelay());
+        }
+        if(e.getSource() == MovementTimer){
+            for(int i = 0; i < bullets.size(); i++){
+                bullets.get(i).move();
+            }
+            for(int i = 0; i < enemies.size(); i++){
+                enemies.get(i).move(ScreenHeight);
             }
         }
     }
@@ -95,8 +117,10 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
         if(e.getKeyCode() == KeyEvent.VK_D){
             player.moveRight(ScreenWidth);
         }
-        if(e.getKeyCode() == KeyEvent.VK_SPACE){
-            player.shoot(bullets);
+        if(e.getKeyCode() == KeyEvent.VK_SPACE && MovementTimer.isRunning()){
+            //player.shoot(bullets);
+        }
+        if(e.getKeyCode() == KeyEvent.VK_P){
         }
     }
     public void keyReleased(KeyEvent e){}
@@ -109,6 +133,9 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
         player.draw(g);
         for(int i = 0; i < bullets.size(); i++){
             bullets.get(i).draw(g);
+        }
+        for(int i = 0; i < enemies.size(); i++){
+            enemies.get(i).draw(g);
         }
         repaint();
     }

@@ -31,13 +31,17 @@ public class Spaceship extends Sprite{
         catch(IOException e){
             ShipImage = null;
         }
-        super.setWidth(ShipImage.getWidth() + 30);
+        super.setWidth(ShipImage.getWidth());
         super.setHeight(ShipImage.getHeight() + 30);
         super.setY(getY() - super.getHeight());
     }
     public void moveRight(int ScreenWidth){
+        System.out.println(getWidth());
         if(getX()+ getWidth() >=ScreenWidth || getX() + getWidth() + getSpeed() >= ScreenWidth){
             setX(getX());
+        }
+        else{
+            setX(getX() + getSpeed());
         }
     }
     public void moveLeft(){
@@ -49,7 +53,7 @@ public class Spaceship extends Sprite{
         }
     }
     public void shoot(ArrayList<Bullet> bullets){
-        bullets.add(new Bullet(getX(), getY(), 10, 10));
+        bullets.add(new Bullet((getX() + getWidth()) /2, getY(), 10, 10));
         bullets.get(bullets.size() - 1).enableDrawing(true);
         bullets.get(bullets.size() - 1).enableMovement(true);
     }

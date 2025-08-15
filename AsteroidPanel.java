@@ -15,30 +15,38 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
     private int ScreenWidth;
     private int ScreenHeight;
     private int SecondsToStart;
+    private int Score;
 
     private Timer StartTimer;
     private Timer MovementTimer;
-    private Timer AsteroidSpawnTimer;
 
     private BufferedImage BackgroundImage;
     private AffineTransform BackgroundScaler;
 
     private JLabel GameLabel;
+    private JLabel ScoreLabel;
     
     private Spaceship player;
     
     private ArrayList<Bullet> bullets;
     private ArrayList<Asteroid> enemies;
 
-    private Random ran = new Random();
     public AsteroidPanel(int DisplayWidth, int DisplayHeight){
         this.ScreenWidth = DisplayWidth;
         this.ScreenHeight = DisplayHeight;
+        Score = 0;
+
         setLayout(new FlowLayout());
+
         GameLabel = new JLabel(""+ SecondsToStart, SwingConstants.CENTER);
         GameLabel.setForeground(Color.WHITE);
         Font LabelFont = new Font("Times New Roman", Font.BOLD, 72);
         GameLabel.setFont(LabelFont);
+
+        ScoreLabel = new JLabel("", SwingConstants.CENTER);
+        ScoreLabel.setForeground(Color.WHITE);
+        Font ScoreFont = new Font("Times New Roman", Font.BOLD, 24);
+        ScoreLabel.setFont(ScoreFont);
 
         //Setting up the Background Image
 
@@ -72,8 +80,8 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
         BackgroundScaler.scale(ScaleWidth, ScaleHeight);
 
         StartTimer = new Timer(SECOND_IN_MILLISECONDS, this);
-        AsteroidSpawnTimer = new Timer(SECOND_IN_MILLISECONDS, this);
         MovementTimer = new Timer(SECOND_IN_MILLISECONDS, this);
+
 
         player = new Spaceship(DisplayWidth /2, DisplayHeight);
         //player.enableDrawing(true);
@@ -85,6 +93,7 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
         setFocusable(true);
         SecondsToStart = 4;
         StartTimer.start();
+        this.add(ScoreLabel);
         this.add(GameLabel);
     }
     public void actionPerformed(ActionEvent e){
@@ -94,12 +103,9 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
             if(SecondsToStart <= 0){
                 GameLabel.setText("");
                 MovementTimer.start();
-                AsteroidSpawnTimer.start();
                 StartTimer.stop();
+                ScoreLabel.setText("Score: 0");
             }
-        }
-        if(e.getSource() ==AsteroidSpawnTimer){
-            //System.out.println(AsteroidSpawnTimer.getDelay());
         }
         if(e.getSource() == MovementTimer){
             for(int i = 0; i < bullets.size(); i++){
@@ -111,16 +117,17 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
         }
     }
     public void keyPressed(KeyEvent e){
-        if(e.getKeyCode() == KeyEvent.VK_A){
+        if(e.getKeyCode() == KeyEvent.VK_A ||e.getKeyCode() == KeyEvent.VK_LEFT){
             player.moveLeft();
         }
-        if(e.getKeyCode() == KeyEvent.VK_D){
+        if(e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT){
             player.moveRight(ScreenWidth);
         }
         if(e.getKeyCode() == KeyEvent.VK_SPACE && MovementTimer.isRunning()){
-            //player.shoot(bullets);
+            player.shoot(bullets);
         }
         if(e.getKeyCode() == KeyEvent.VK_P){
+            setPaused();
         }
     }
     public void keyReleased(KeyEvent e){}
@@ -138,5 +145,30 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
             enemies.get(i).draw(g);
         }
         repaint();
+    }
+    public void spawnAsteroid(){
+        Random ran = new Random();
+        enemies.add(new Asteroid(ran.nextInt(ScreenWidth - 114), 0));
+    }
+    public void setPaused(){
+        if(StartTimer.isRunning() || MovementTimer.isRunning()){
+            if(StartTimer.isRunning())
+                StartTimer.stop();
+            else if(MovementTimer.isRunning())
+                MovementTimer.stop();
+            ScoreLabel.setText("");
+            GameLabel.setText("PAUSED");
+        }
+        else if(!StartTimer.isRunning() || !MovementTimer.isRunning()){
+            if(SecondsToStart > 0){
+                GameLabel.setText("" + SecondsToStart);
+                StartTimer.start();
+            }
+            else{
+                MovementTimer.start();
+                GameLabel.setText("");
+                ScoreLabel.setText("Score: " + Score);
+            }
+        }
     }
 }

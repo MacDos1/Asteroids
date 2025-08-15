@@ -5,6 +5,8 @@ public class Bullet extends Sprite{
         super.setWidth(width);
         super.setHeight(height);
         super.enableDrawing(true);
+        setWidth(width);
+        setHeight(height);
     }
     public void move(){
         if(canMove()){

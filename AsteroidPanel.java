@@ -19,6 +19,7 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
 
     private Timer StartTimer;
     private Timer MovementTimer;
+    private Timer CollisionTimer;
 
     private BufferedImage BackgroundImage;
     private AffineTransform BackgroundScaler;
@@ -81,6 +82,7 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
 
         StartTimer = new Timer(SECOND_IN_MILLISECONDS, this);
         MovementTimer = new Timer(SECOND_IN_MILLISECONDS, this);
+        CollisionTimer = new Timer(1, this);
 
 
         player = new Spaceship(DisplayWidth /2, DisplayHeight);
@@ -88,6 +90,7 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
         
         bullets = new ArrayList<>();
         enemies = new ArrayList<>();
+        enemies.add(new Asteroid(player.getX(), 0));
         
         addKeyListener(this);
         setFocusable(true);
@@ -105,6 +108,8 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
                 MovementTimer.start();
                 StartTimer.stop();
                 ScoreLabel.setText("Score: 0");
+                CollisionTimer.start();
+                System.out.println(CollisionTimer.isRunning());
             }
         }
         if(e.getSource() == MovementTimer){
@@ -113,6 +118,41 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
             }
             for(int i = 0; i < enemies.size(); i++){
                 enemies.get(i).move(ScreenHeight);
+            }
+        }
+        if(e.getSource() == CollisionTimer){
+            //Checks if any bullets hits the asteroid
+            for(int EnemyIndex = 0; EnemyIndex < enemies.size(); EnemyIndex++){
+                for(int BulletIndex = 0; BulletIndex < bullets.size(); BulletIndex++){
+                    Bullet CurrentBullet = bullets.get(BulletIndex);
+                    Asteroid CurrentEnemy = enemies.get(EnemyIndex);
+
+                    int BulletRightSide = CurrentBullet.getX();
+                    int BulletLeftSide = CurrentBullet.getX() + CurrentBullet.getWidth();
+                    int BulletTopSide = CurrentBullet.getY();
+
+                    int EnemyRightSide = CurrentEnemy.getX();
+                    int EnemyLeftSide = CurrentEnemy.getX() + CurrentEnemy.getWidth();
+                    int EnemyTopSide = CurrentEnemy.getY();
+                    int EnemyBottomSide = CurrentEnemy.getY() + CurrentEnemy.getHeight();
+
+                    if(BulletRightSide >= EnemyRightSide){
+                        ;
+                    }
+                }
+            }
+
+            //Asteroid hits ship
+            //System.out.println("Player Left Side Cordinates: (" + player.getX() +", " +player.getY() +")");
+            //System.out.println("Player Right Side Cordinates: (" + player.getX() +", " +(player.getY() + player.getWidth()) +")");
+            for(int i = 0; i < enemies.size(); i++){
+                if(enemies.get(i).getX() >= player.getX() && enemies.get(i).getX() +enemies.get(i).getHeight() <= player.getX() + player.getWidth()){
+                    if(enemies.get(i).getY() + enemies.get(i).getHeight()- 30 >= player.getY()){
+                        MovementTimer.stop();
+                        CollisionTimer.stop();
+                        //System.out.println("Player Died");
+                    }
+                }
             }
         }
     }
@@ -152,10 +192,13 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
     }
     public void setPaused(){
         if(StartTimer.isRunning() || MovementTimer.isRunning()){
-            if(StartTimer.isRunning())
+            if(StartTimer.isRunning()){
                 StartTimer.stop();
-            else if(MovementTimer.isRunning())
+            }
+            else if(MovementTimer.isRunning()){
                 MovementTimer.stop();
+                CollisionTimer.stop();
+            }
             ScoreLabel.setText("");
             GameLabel.setText("PAUSED");
         }
@@ -166,6 +209,7 @@ public class AsteroidPanel extends JPanel implements ActionListener,KeyListener{
             }
             else{
                 MovementTimer.start();
+                CollisionTimer.start();
                 GameLabel.setText("");
                 ScoreLabel.setText("Score: " + Score);
             }
